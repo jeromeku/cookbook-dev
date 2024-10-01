@@ -1,11 +1,14 @@
+import os
+import sys
+import time
+
 import torch
-import sys, os, time
 
 COMMS_BENCH_DIR = os.path.join(os.path.dirname(__file__), "../")
 sys.path.append(COMMS_BENCH_DIR)
 
-from communication.utils import *
 from communication.constants import *
+from communication.utils import *
 
 
 # Run all_gather and print metrics
@@ -19,13 +22,7 @@ def timed_all_gather(input, output, start_event, end_event, args):
     # Warmups, establish connections, etc.
     for i in range(args.warmups):
         if args.dist == 'torch':
-            if hasattr(torch.distributed, "_all_gather_base"):
-                dist._all_gather_base(output, input, group=None, async_op=args.async_op)
-            else:
-                output_tensors = list(
-                    torch.chunk(output_tensor,
-                                cdb.get_world_size(group)))
-                dist.all_gather(output_tensors, input, group=None, async_op=True)
+             dist.all_gather_into_tensor(output, input)
         elif args.dist == 'deepspeed':
             dist.allgather_fn(output, input, group=None, async_op=args.async_op)
     sync_all()
@@ -34,13 +31,7 @@ def timed_all_gather(input, output, start_event, end_event, args):
     start_event.record()
     for i in range(args.trials):
         if args.dist == 'torch':
-            if hasattr(torch.distributed, "_all_gather_base"):
-                dist._all_gather_base(output, input, group=None, async_op=args.async_op)
-            else:
-                output_tensors = list(
-                    torch.chunk(output_tensor,
-                                cdb.get_world_size(group)))
-                dist.all_gather(output_tensors, input, group=None, async_op=True)
+             dist.all_gather_into_tensor(output, input)
         elif args.dist == 'deepspeed':
             dist.allgather_fn(output, input, group=None, async_op=args.async_op)
     end_event.record()
@@ -106,7 +97,7 @@ def run_all_gather(local_rank, args):
             timed_all_gather(input, output, start_event, end_event, args)
     else:
         # all_gather_into_tensor saves memory
-        if ((args.dist == 'torch' or args.dist == 'deepspeed') and dist.has_all_gather_into_tensor()):
+        if ((args.dist == 'torch' or args.dist == 'deepspeed')):# and dist.has_all_gather_into_tensor()):
             mem_factor = args.mem_factor + 0.2
         else:
             mem_factor = args.mem_factor
