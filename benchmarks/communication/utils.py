@@ -1,7 +1,9 @@
-import torch
-import os, sys
-import math
 import argparse
+import math
+import os
+import sys
+
+import torch
 
 COMMS_BENCH_DIR = os.path.join(os.path.dirname(__file__), "../")
 sys.path.append(COMMS_BENCH_DIR)
