@@ -76,12 +76,12 @@ def run_all_gather(local_rank, args):
         for M in M_LIST:
             global_rank = dist.get_rank()
             try:
-                mat = torch.ones(world_size, M,
+                input = torch.ones(world_size, M,
                                  dtype=getattr(torch, args.dtype)).cuda(local_rank)
                 sync_all()
-                input = ((mat.mul_(float(global_rank))).view(-1))
+                input = input.view(-1)#((mat.mul_(float(global_rank))).view(-1))
                 # Delete original mat to avoid OOM
-                del mat
+                #del mat
                 torch.cuda.empty_cache()
                 output = torch.zeros(input.nelement() * world_size,
                                      dtype=getattr(torch, args.dtype)).cuda(local_rank)
