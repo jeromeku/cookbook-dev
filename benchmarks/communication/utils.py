@@ -231,10 +231,7 @@ def bytes_to_human_readable(num_bytes: int) -> str:
     return f"{num_bytes:.1f}{units[unit_index]}"
 
 
-def setup_scan_range(args):
-    pass
-
-def setup_single_payload_all_gather(args, elements_per_gpu):
+def setup_single_payload(args, elements_per_gpu, op):
     sync_all()
     world_size = dist.get_world_size()
     local_rank = args.local_rank 
@@ -247,9 +244,12 @@ def setup_single_payload_all_gather(args, elements_per_gpu):
         )
 
         torch.cuda.empty_cache()
-        output = torch.zeros(
-            elements_per_gpu * world_size, dtype=getattr(torch, args.dtype)
-        ).cuda(local_rank)
+        if op == "all_gather":
+            output = torch.zeros(
+                elements_per_gpu * world_size, dtype=getattr(torch, args.dtype)
+            ).cuda(local_rank)
+        else:
+            output = None
     except RuntimeError as e:
         if "out of memory" in str(e):
             if dist.get_rank() == 0:
@@ -343,8 +343,8 @@ def benchmark_parser():
     parser.add_argument(
         "--elements-per-gpu",
         type=int,
-        default=1,
-        help="Elements per gpu in terms of MB (1 -> 1MB, 1000 -> 1GB)",
+        default=20,
+        help="Elements per gpu as power of 2.  E,g, `--elements-per-gpu=20` -> 2 ** 20 ~ 1MB with dtype=uint8)",
     )
     parser.add_argument(
         "--scan-start",

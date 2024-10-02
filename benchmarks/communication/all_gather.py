@@ -16,7 +16,7 @@ from communication.utils import (
     init_processes,
     print_header,
     print_rank_0,
-    setup_single_payload_all_gather,
+    setup_single_payload,
     sync_all,
 )
 
@@ -77,13 +77,13 @@ def run_all_gather(args):
         payloads = get_scan_range(args)
         # loop over various tensor sizes
         for payload in payloads:
-            input, output = setup_single_payload_all_gather(
-                args, elements_per_gpu=payload
+            input, output = setup_single_payload(
+                args, elements_per_gpu=payload, op="all_gather"
             )
             timed_all_gather(input, output, start_event, end_event, args)
     else:
-        elements_per_gpu = int(args.elements_per_gpu * COMM_CONST.ELEMENT_UNITS)
-        input, output = setup_single_payload_all_gather(args, elements_per_gpu=elements_per_gpu)
+        elements_per_gpu = 2 ** int(args.elements_per_gpu)
+        input, output = setup_single_payload(args, elements_per_gpu=elements_per_gpu, op="all_gather")
         timed_all_gather(input, output, start_event, end_event, args)
 
 
