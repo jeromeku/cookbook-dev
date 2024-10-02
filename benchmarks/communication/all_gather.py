@@ -107,7 +107,7 @@ def run_all_gather(local_rank, args):
         #                              mem_factor=mem_factor,
         #                              local_rank=local_rank,
         #                              args=args)
-        elements_per_gpu = int(args.elements_per_gpu * 1e6) # args.elements-per-gpu is in MB
+        elements_per_gpu = int(args.elements_per_gpu * (1024 ** 2)) # args.elements-per-gpu is in 1e6
         try:
             input = torch.ones(elements_per_gpu, dtype=getattr(torch,
                                                              args.dtype)).cuda(local_rank).view(-1)
