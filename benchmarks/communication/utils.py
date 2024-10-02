@@ -111,7 +111,8 @@ def print_header(args, comm_op):
         world_size = dist.get_world_size()
     tput = f"Throughput ({args.bw_unit})"
     busbw = f"BusBW ({args.bw_unit})"
-    header = f"\n---- Performance of {comm_op} on {world_size} devices ---------------------------------------------------------\n"
+    
+    header = f"\n---- Performance of {comm_op} on {world_size} devices for {args.trials} trials ---------------------------------------------------------\n"
     duration_str = "Duration"
     if args.raw:
         duration_str += " (us)"
@@ -248,6 +249,8 @@ def setup_single_payload(args, elements_per_gpu, op):
             output = torch.zeros(
                 elements_per_gpu * world_size, dtype=getattr(torch, args.dtype)
             ).cuda(local_rank)
+        elif op == "all_to_all":
+            output = torch.zeros_like(input)
         else:
             output = None
     except RuntimeError as e:

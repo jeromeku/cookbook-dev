@@ -36,13 +36,13 @@ def main(args, rank):
         if comm_op == 'all_reduce':
             run_all_reduce(args)
         if comm_op == 'all_gather':
-            run_all_gather(args=args)
+            run_all_gather(args)
         if comm_op == 'all_to_all':
-            run_all_to_all(local_rank=rank, args=args)
+            run_all_to_all(args)
         if comm_op == 'pt2pt':
-            run_pt2pt(local_rank=rank, args=args)
+            run_pt2pt(args)
         if comm_op == 'broadcast':
-            run_broadcast(local_rank=rank, args=args)
+            run_broadcast(args)
 
 
 # For directly calling benchmark

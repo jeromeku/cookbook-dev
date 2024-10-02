@@ -1,13 +1,11 @@
 import os
 import sys
-import time
 
 import torch
 
 COMMS_BENCH_DIR = os.path.join(os.path.dirname(__file__), "../")
 sys.path.append(COMMS_BENCH_DIR)
 
-import communication.constants as COMM_CONST
 from communication.utils import (
     benchmark_parser,
     bytes_to_human_readable,
@@ -64,7 +62,6 @@ def timed_pt2pt(input, start_event, end_event, args):
     # maintain and clean performance data
     avg_duration = duration / args.trials
     size = input.element_size() * input.nelement()
-    n = dist.get_world_size()
     tput, busbw = get_bw('pt2pt', size, avg_duration, args)
     tput_str, busbw_str, duration_str = get_metric_strings(args, tput, busbw, avg_duration)
     desc = f'{input.nelement()}x{input.element_size()}'
@@ -89,7 +86,7 @@ def run_pt2pt(args):
             )
             timed_pt2pt(input, start_event, end_event, args)
     else:
-        elements_per_gpu = int(args.elements_per_gpu * COMM_CONST.ELEMENT_UNITS)
+        elements_per_gpu = 2 ** int(args.elements_per_gpu)
         input, _ = setup_single_payload(args, elements_per_gpu=elements_per_gpu, op="pt2pt")
         timed_pt2pt(input, start_event, end_event, args)
 

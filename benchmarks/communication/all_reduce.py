@@ -70,7 +70,7 @@ def run_all_reduce(args):
             )
             timed_all_reduce(input, start_event, end_event, args)
     else:
-        elements_per_gpu = int(args.elements_per_gpu * COMM_CONST.ELEMENT_UNITS)
+        elements_per_gpu = 2 ** int(args.elements_per_gpu)
         input, _ = setup_single_payload(args, elements_per_gpu=elements_per_gpu, op="all_reduce")
         timed_all_reduce(input, start_event, end_event, args)
 
@@ -79,4 +79,4 @@ if __name__ == "__main__":
     args = benchmark_parser().parse_args()
     rank = args.local_rank
     init_processes(local_rank=rank, args=args)
-    run_all_reduce(local_rank=rank, args=args)
+    run_all_reduce(args)
