@@ -231,5 +231,7 @@ def benchmark_parser():
                         default=.3,
                         help='Proportion of max available GPU memory to use for single-size evals')
     parser.add_argument("--elements-per-gpu", type=int, default=1, help='Elements per gpu in terms of MB (1 -> 1MB, 1000 -> 1GB)')
+    parser.add_argument("--scan-start", type=int, default=20, help='Start number of elements as power of 2 when running scan (20 -> 2 ** 20 ~ 1MB)')
+    parser.add_argument("--scan-end", type=int, default=31, help='End number of elements as power of 2 when running scan (31 -> 2 ** 31 ~ 2GB)')
     parser.add_argument("--debug", action="store_true", help='Enables all_to_all debug prints')
     return parser
