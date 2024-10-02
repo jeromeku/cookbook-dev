@@ -77,12 +77,10 @@ def run_all_gather(local_rank, args):
         for M in M_LIST:
             global_rank = dist.get_rank()
             try:
-                input = torch.ones(world_size, M,
-                                 dtype=getattr(torch, args.dtype)).cuda(local_rank)
+                input = torch.ones(M, #world_size, M,
+                                 dtype=getattr(torch, args.dtype)).cuda(local_rank).view(-1)
                 sync_all()
-                input = input.view(-1)#((mat.mul_(float(global_rank))).view(-1))
-                # Delete original mat to avoid OOM
-                #del mat
+
                 torch.cuda.empty_cache()
                 output = torch.zeros(input.nelement() * world_size,
                                      dtype=getattr(torch, args.dtype)).cuda(local_rank)
@@ -104,18 +102,16 @@ def run_all_gather(local_rank, args):
             mem_factor = args.mem_factor
         # Send the biggest message size our GPUs can fit. If you're facing OOM errors, reduce the mem_factor
         sync_all()
-        elements_per_gpu = max_numel(comm_op='all_gather',
-                                     dtype=getattr(torch, args.dtype),
-                                     mem_factor=mem_factor,
-                                     local_rank=local_rank,
-                                     args=args)
+        # elements_per_gpu = max_numel(comm_op='all_gather',
+        #                              dtype=getattr(torch, args.dtype),
+        #                              mem_factor=mem_factor,
+        #                              local_rank=local_rank,
+        #                              args=args)
+        elements_per_gpu = int(args.elements_per_gpu * 1e6) # args.elements-per-gpu is in MB
         try:
             input = torch.ones(elements_per_gpu, dtype=getattr(torch,
-                                                             args.dtype)).cuda(local_rank)
-            # multiply each GPU's tensor by the rank to ease debugging
-            input = input.view(-1) #((mat.mul_(float(global_rank))).view(-1))
-            # Delete original mat to avoid OOM
-            # del mat
+                                                             args.dtype)).cuda(local_rank).view(-1)
+
             torch.cuda.empty_cache()
             output = torch.zeros(elements_per_gpu * world_size,
                                  dtype=getattr(torch, args.dtype)).cuda(local_rank)

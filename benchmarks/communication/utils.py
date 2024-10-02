@@ -95,7 +95,7 @@ def print_header(args, comm_op):
     duration_str = 'Duration'
     if args.raw:
         duration_str += ' (us)'
-    header += f"{'Size (Bytes)':20s} {'Description':25s} {duration_str:20s} {tput:20s} {busbw:20s}\n"
+    header += f"{'Size (Bytes)':20s} {'N x Size':25s} {duration_str:20s} {tput:20s} {busbw:20s}\n"
     header += "----------------------------------------------------------------------------------------------------"
     print_rank_0(header)
 
@@ -230,5 +230,6 @@ def benchmark_parser():
                         type=float,
                         default=.3,
                         help='Proportion of max available GPU memory to use for single-size evals')
+    parser.add_argument("--elements-per-gpu", type=int, default=1, help='Elements per gpu in terms of MB (1 -> 1MB, 1000 -> 1GB)')
     parser.add_argument("--debug", action="store_true", help='Enables all_to_all debug prints')
     return parser
