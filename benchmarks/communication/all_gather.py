@@ -68,7 +68,8 @@ def run_all_gather(local_rank, args):
     if args.scan:
         # Create list of message sizes
         M_LIST = []
-        for x in (2**p for p in range(1, args.maxsize)):
+        start = args.maxsize // 2
+        for x in (2**p for p in range(start, args.maxsize)):
             M_LIST.append(x)
 
         sync_all()
@@ -76,12 +77,12 @@ def run_all_gather(local_rank, args):
         for M in M_LIST:
             global_rank = dist.get_rank()
             try:
-                mat = torch.ones(world_size, M,
+                input = torch.ones(world_size, M,
                                  dtype=getattr(torch, args.dtype)).cuda(local_rank)
                 sync_all()
-                input = ((mat.mul_(float(global_rank))).view(-1))
+                input = input.view(-1)#((mat.mul_(float(global_rank))).view(-1))
                 # Delete original mat to avoid OOM
-                del mat
+                #del mat
                 torch.cuda.empty_cache()
                 output = torch.zeros(input.nelement() * world_size,
                                      dtype=getattr(torch, args.dtype)).cuda(local_rank)
@@ -109,12 +110,12 @@ def run_all_gather(local_rank, args):
                                      local_rank=local_rank,
                                      args=args)
         try:
-            mat = torch.ones(elements_per_gpu, dtype=getattr(torch,
+            input = torch.ones(elements_per_gpu, dtype=getattr(torch,
                                                              args.dtype)).cuda(local_rank)
             # multiply each GPU's tensor by the rank to ease debugging
-            input = ((mat.mul_(float(global_rank))).view(-1))
+            input = input.view(-1) #((mat.mul_(float(global_rank))).view(-1))
             # Delete original mat to avoid OOM
-            del mat
+            # del mat
             torch.cuda.empty_cache()
             output = torch.zeros(elements_per_gpu * world_size,
                                  dtype=getattr(torch, args.dtype)).cuda(local_rank)
