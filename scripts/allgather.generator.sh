@@ -27,7 +27,7 @@ NUM_GPUS=${NUM_GPUS:-8}
 NUM_NODES=${NUM_NODES:-1}
 TIME=${TIME:-0:30:00}
 ACCOUNT=${ACCOUNT:-dir_arc}
-PARTITION=${PARTITION:-pool0}
+PARTITION=${PARTITION:-pool0_datahall_a}
 OUTPUT=${OUTPUT:-logs/$JOB_NAME/$PARTITION/n$NUM_NODES-g$NUM_GPUS/sbatch.out}
 ERROR=${ERROR:-logs/$JOB_NAME/$PARTITION/n$NUM_NODES-g$NUM_GPUS/sbatch.err}
 CONTAINER=${CONTAINER:-"/scratch/fsw/portfolios/dir/projects/dir_arc/containers/clara-discovery+savanna+arc-evo2_efa+nv-latest-cascade-1.5.sqsh"}
@@ -61,7 +61,7 @@ MASTER_ADDR=\$(scontrol show hostnames \$SLURM_JOB_NODELIST | head -n 1)
 
 CMD=\"torchrun --nproc_per_node $NUM_GPUS \
 --nnodes $NUM_NODES \
---node_rank \$SLURM_PROCID \
+--node_rank \\$SLURM_PROCID \
 --rdzv_endpoint \$MASTER_ADDR:$MASTER_PORT \
 --rdzv_backend c10d \
 --max_restarts 0 $PROGRAM\"
@@ -79,8 +79,9 @@ echo \"END TIME: \$(date)\"
 "
 
 # Save the script to a file
-echo "$SBATCH" > ${JOB_NAME}.sbatch
-script=$(realpath ${JOB_NAME}.sbatch)
+OUTPUT_FILE=${JOB_NAME}-${PARTITION}-n${NUM_NODES}-g${NUM_GPUS}.sbatch
+echo "$SBATCH" > $OUTPUT_FILE
+script=$(realpath $OUTPUT_FILE)
 chmod +x $script
 echo "SLURM script generated: $script"
-sbatch $script
+# sbatch $script
